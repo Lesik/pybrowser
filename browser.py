@@ -12,22 +12,35 @@ class Browser:
 	tab_closebuttons = []
 	tab_webviews = []
 	tab_labels = []
+	tab_titlecontainers = []
 
 	def __init__(self):
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(UI_FILE)
 		self.builder.connect_signals(self)
 
-		self.btn_back = self.builder.get_object("bar-btn-back")
-		self.btn_forward = self.builder.get_object("bar-btn-forward")
-		self.urlbar = self.builder.get_object("bar-urlbar")
+		self.btn_back = self.builder.get_object('bar-btn-back')
+		self.btn_forward = self.builder.get_object('bar-btn-forward')
+		self.urlbar = self.builder.get_object('bar-urlbar')
 
-		self.tabcontainer = self.builder.get_object("tabcontainer")
+		self.tabcontainer = self.builder.get_object('tabcontainer')
 
-		self.browser = self.builder.get_object("browser")
+		self.browser = self.builder.get_object('browser')
 		self.browser.show_all()
 
 		self.tab_append()
+
+	def tab_new_with_glade(self, position):
+		# create new builder, see https://stackoverflow.com/questions/27737525
+		builder = Gtk.Builder()
+		builder.add_from_file(UI_FILE)
+		self.tab_labels.insert(position, builder.get_object('tab-title'))
+		self.tab_closebuttons.insert(position, builder.get_object('tab-close'))
+		self.tab_webviews.insert(position, WebKit.WebView())
+		self.tab_titlecontainers.insert(position, builder.get_object('tab-titlecontainer'))
+		print(self.tab_titlecontainers[position])
+		self.tabcontainer.insert_page(self.tab_webviews[position], self.tab_titlecontainers[position], position)
+		self.tabcontainer.show_all()
 
 	def tab_new(self, position):
 		tab_content = Gtk.ScrolledWindow()
@@ -56,7 +69,7 @@ class Browser:
 		tab_webview.connect("load-finished", self.on_webview_load_finished)
 
 	def tab_append(self):
-		self.tab_new(self.tabcontainer.get_n_pages())
+		self.tab_new_with_glade(self.tabcontainer.get_n_pages())
 
 	def tab_close_current(self):
 		self.tab_close(self.tabcontainer.get_current_page())
@@ -72,7 +85,7 @@ class Browser:
 	def on_webview_load_started(self, webview, webframe):
 		self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
 											'image-loading')
-	def on_tab_close_btn_clicked(self, button):
+	def on_tab_close_clicked(self, button):
 		self.tab_close(self.tab_closebuttons.index(button))
 
 	def on_webview_load_finished(self, webview, webframe):
@@ -87,12 +100,12 @@ class Browser:
 		self.tabs[self.tabcontainer.get_current_page()][1].set_text(title)
 
 	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_id):
-		if self.tabs[tab_id][2].get_uri() is not None:
+		"""if self.tabs[tab_id][2].get_uri() is not None:
 			self.urlbar.set_text(self.tabs[tab_id][2].get_uri())
 		else:
 			self.urlbar.set_text("")
 		self.btn_back.set_sensitive(self.tabs[tab_id][2].can_go_back())
-		self.btn_forward.set_sensitive(self.tabs[tab_id][2].can_go_forward())
+		self.btn_forward.set_sensitive(self.tabs[tab_id][2].can_go_forward())"""
 
 	def on_button_clicked(self, button):
 		if button.get_stock_id() == Gtk.STOCK_GO_BACK:
