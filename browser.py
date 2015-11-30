@@ -30,16 +30,17 @@ class Browser:
 
 		self.tab_append()
 
-	def tab_new_with_glade(self, position):
+	def tab_new_with_glade(self, pos):
 		# create new builder, see https://stackoverflow.com/questions/27737525
 		builder = Gtk.Builder()
 		builder.add_from_file(UI_FILE)
-		self.tab_labels.insert(position, builder.get_object('tab-title'))
-		self.tab_closebuttons.insert(position, builder.get_object('tab-close'))
-		self.tab_webviews.insert(position, WebKit.WebView())
-		self.tab_titlecontainers.insert(position, builder.get_object('tab-titlecontainer'))
-		print(self.tab_titlecontainers[position])
-		self.tabcontainer.insert_page(self.tab_webviews[position], self.tab_titlecontainers[position], position)
+		self.tab_labels.insert(pos, builder.get_object('tab-title'))
+		self.tab_closebuttons.insert(pos, builder.get_object('tab-close'))
+		self.tab_webviews.insert(pos, WebKit.WebView())
+		self.tab_webviews[pos].connect('title-changed', self.on_webview_title_changed)
+		self.tab_titlecontainers.insert(pos, builder.get_object('tab-titlecontainer'))
+		self.tabcontainer.insert_page(self.tab_webviews[pos], self.tab_titlecontainers[pos], pos)
+		self.tabcontainer.child_set_property(self.tab_webviews[pos], 'tab-expand', True)
 		self.tabcontainer.show_all()
 
 	def tab_new(self, position):
@@ -67,6 +68,9 @@ class Browser:
 		tab_webview.connect("load-started", self.on_webview_load_started)
 		tab_webview.connect("title-changed", self.on_webview_title_changed)
 		tab_webview.connect("load-finished", self.on_webview_load_finished)
+
+	def tab_append_next_to_self(self):
+		self.tab_new_with_glade(self.tabcontainer.get_current_page())
 
 	def tab_append(self):
 		self.tab_new_with_glade(self.tabcontainer.get_n_pages())
@@ -97,7 +101,7 @@ class Browser:
 		self.btn_forward.set_sensitive(self.tabs[self.tabcontainer.get_current_page()][2].can_go_forward())
 
 	def on_webview_title_changed(self, webview, webframe, title):
-		self.tabs[self.tabcontainer.get_current_page()][1].set_text(title)
+		self.tab_labels[self.tabcontainer.get_current_page()].set_text(title)
 
 	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_id):
 		"""if self.tabs[tab_id][2].get_uri() is not None:
@@ -113,7 +117,8 @@ class Browser:
 		elif button.get_stock_id() == Gtk.STOCK_GO_FORWARD:
 			self.tabs[self.tabcontainer.get_current_page()][2].go_forward()
 		elif button.get_stock_id() == Gtk.STOCK_ADD:
-			self.tab_append()
+			#self.tab_append()
+			self.tab_append_next_to_self()
 		elif button.get_stock_id() == Gtk.STOCK_CLOSE:
 			self.tab_close_current()
 
@@ -121,7 +126,7 @@ class Browser:
 		entry = urlbar_entry.get_text()
 		if not "http://" in entry:
 			entry = "http://" + entry
-		self.tabs[self.tabcontainer.get_current_page()][2].load_uri(entry)
+		self.tab_webviews[self.tabcontainer.get_current_page()].load_uri(entry)
 
 	def on_browser_destroy(self, window):
 		Gtk.main_quit()
