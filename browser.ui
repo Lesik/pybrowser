@@ -66,7 +66,7 @@
                   <object class="GtkEntry" id="bar-urlbar">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="placeholder_text" translatable="yes">Suche oder Adresse eingeben</property>
+                    <property name="placeholder_text" translatable="yes">Search or enter address</property>
                     <signal name="activate" handler="on_urlbar_activate" swapped="no"/>
                   </object>
                 </child>
@@ -129,6 +129,7 @@
           <object class="GtkNotebook" id="tabcontainer">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="scrollable">True</property>
             <signal name="switch-page" handler="on_tabcontainer_switch_page" swapped="no"/>
             <child>
               <placeholder/>
@@ -156,6 +157,42 @@
           </packing>
         </child>
       </object>
+    </child>
+  </object>
+  <object class="GtkBox" id="tab-titlecontainer">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkLabel" id="tab-title">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">New Tab</property>
+      </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="tab-close">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <signal name="clicked" handler="on_tab_close_clicked" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="image1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="stock">gtk-close</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
     </child>
   </object>
 </interface>
