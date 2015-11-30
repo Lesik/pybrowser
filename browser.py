@@ -35,6 +35,7 @@ class Browser:
 		self.tabs.append([tab_content, tab_label, tab_webview])
 		self.tabcontainer.append_page(tab_content, tab_label)
 		self.tabcontainer.show_all()
+		tab_webview.connect("load-started", self.on_webview_load_started)
 		tab_webview.connect("title-changed", self.on_webview_title_changed)
 		tab_webview.connect("load-finished", self.on_webview_load_finished)
 
@@ -46,8 +47,15 @@ class Browser:
 		self.tabs.pop(tab_id)
 		self.tabcontainer.remove_page(tab_id)
 
+	def on_webview_load_started(self, webview, webframe):
+		self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
+											'image-loading')
+
 	def on_webview_load_finished(self, webview, webframe):
-		self.urlbar.set_text(webview.get_uri())
+		self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
+											None)
+		if webview.get_uri() is not None:
+			self.urlbar.set_text(webview.get_uri())
 		self.btn_back.set_sensitive(self.tabs[self.tabcontainer.get_current_page()][2].can_go_back())
 		self.btn_forward.set_sensitive(self.tabs[self.tabcontainer.get_current_page()][2].can_go_forward())
 
