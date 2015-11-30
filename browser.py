@@ -37,9 +37,10 @@ class Browser:
 		self.tab_labels.insert(position, builder.get_object('tab-title'))
 		self.tab_closebuttons.insert(position, builder.get_object('tab-close'))
 		self.tab_webviews.insert(position, WebKit.WebView())
+		self.tab_webviews[position].connect('title-changed', self.on_webview_title_changed)
 		self.tab_titlecontainers.insert(position, builder.get_object('tab-titlecontainer'))
-		print(self.tab_titlecontainers[position])
 		self.tabcontainer.insert_page(self.tab_webviews[position], self.tab_titlecontainers[position], position)
+		self.tabcontainer.child_set_property(self.tab_webviews[position], 'tab-expand', True)
 		self.tabcontainer.show_all()
 
 	def tab_new(self, position):
@@ -97,7 +98,7 @@ class Browser:
 		self.btn_forward.set_sensitive(self.tabs[self.tabcontainer.get_current_page()][2].can_go_forward())
 
 	def on_webview_title_changed(self, webview, webframe, title):
-		self.tabs[self.tabcontainer.get_current_page()][1].set_text(title)
+		self.tab_labels[self.tabcontainer.get_current_page()].set_text(title)
 
 	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_id):
 		"""if self.tabs[tab_id][2].get_uri() is not None:
@@ -121,7 +122,7 @@ class Browser:
 		entry = urlbar_entry.get_text()
 		if not "http://" in entry:
 			entry = "http://" + entry
-		self.tabs[self.tabcontainer.get_current_page()][2].load_uri(entry)
+		self.tab_webviews[self.tabcontainer.get_current_page()].load_uri(entry)
 
 	def on_browser_destroy(self, window):
 		Gtk.main_quit()
