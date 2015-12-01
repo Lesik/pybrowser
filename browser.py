@@ -74,19 +74,32 @@ class Browser:
 		self.tabs.pop(tab_id)
 		self.tabcontainer.remove_page(tab_id)
 
-	def __get_webview(self, pos = None):
-		if pos is None:
+	def __get_index_by_object(self, obj):
+		if type(obj) == WebKit.WebView:
+			return self.tab_webviews.index(obj)
+		elif type(obj) == Gtk.ScrolledWindow:
+			return self.tab_contents.index(obj)
+		elif type(obj) == int:
+			return obj
+
+	def __get_webview(self, obj=None):
+		if obj is None:
 			return self.tab_webviews[self.tabcontainer.get_current_page()]
-		return self.tab_webviews[pos]
+		return self.tab_webviews[self.__get_index_by_object(obj)]
 
-	def __get_label(self, pos = None):
-		if pos is None:
+	def __get_label(self, obj=None):
+		if obj is None:
 			return self.tab_labels[self.tabcontainer.get_current_page()]
-		return self.tab_labels[pos]
-
+		return self.tab_labels[self.__get_index_by_object(obj)]
 
 	def get_tab_by_closebutton(self):
 		pass
+
+	def update_urlbar(self, webview):
+		if webview.get_uri() is not None:
+			self.urlbar.set_text(webview.get_uri())
+		else:
+			self.urlbar.set_text('')
 
 	""" WebView listener functions """
 
@@ -97,6 +110,7 @@ class Browser:
 	def on_webview_load_finished(self, webview, webframe):
 		self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
 											None)
+		self.update_urlbar(webview)
 		self.btn_back.set_sensitive(webview.can_go_back())
 		self.btn_forward.set_sensitive(webview.can_go_forward())
 
@@ -120,10 +134,7 @@ class Browser:
 			self.tab_close_current()
 
 	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_pos):
-		if self.__get_webview(tab_pos).get_uri() is not None:
-			self.urlbar.set_text(self.__get_webview(tab_pos).get_uri())
-		else:
-			self.urlbar.set_text('')
+		self.update_urlbar(self.__get_webview(tab_pos))
 		"""if self.tabs[tab_id][2].get_uri() is not None:
 			self.urlbar.set_text(self.tabs[tab_id][2].get_uri())
 		else:
@@ -132,8 +143,7 @@ class Browser:
 		self.btn_forward.set_sensitive(self.tabs[tab_id][2].can_go_forward())"""
 
 	def on_urlbar_clicked(self, urlbar, user_data):
-		#select all urlbar content
-		urlbar.grab_focus()
+		urlbar.grab_focus()				# select all urlbar content
 
 	def on_urlbar_activate(self, urlbar):
 		entry = urlbar.get_text()
