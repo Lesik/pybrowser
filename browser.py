@@ -61,10 +61,10 @@ class Browser:
 			self.tabcontainer.set_current_page(pos)
 
 	def tab_append_next_to_self(self):
-		self.tab_new_with_glade(self.tabcontainer.get_current_page())
+		self.tab_new(self.tabcontainer.get_current_page())
 
 	def tab_append(self):
-		self.tab_new_with_glade(self.tabcontainer.get_n_pages(), True)
+		self.tab_new(self.tabcontainer.get_n_pages(), True)
 
 	def tab_close_current(self):
 		self.tab_close(self.tabcontainer.get_current_page())
@@ -74,8 +74,16 @@ class Browser:
 		self.tabs.pop(tab_id)
 		self.tabcontainer.remove_page(tab_id)
 
-	def __get_webview(self):
-		return self.tab_webviews[self.tabcontainer.get_current_page()]
+	def __get_webview(self, pos = None):
+		if pos is None:
+			return self.tab_webviews[self.tabcontainer.get_current_page()]
+		return self.tab_webviews[pos]
+
+	def __get_label(self, pos = None):
+		if pos is None:
+			return self.tab_labels[self.tabcontainer.get_current_page()]
+		return self.tab_labels[pos]
+
 
 	def get_tab_by_closebutton(self):
 		pass
@@ -93,7 +101,7 @@ class Browser:
 		self.btn_forward.set_sensitive(webview.can_go_forward())
 
 	def on_webview_title_changed(self, webview, webframe, title):
-		self.tab_labels[self.tabcontainer.get_current_page()].set_text(title)
+		self.__get_current_label().set_text(title)
 
 	""" UI elements interaction listener functions """
 
@@ -111,9 +119,9 @@ class Browser:
 		elif button.get_stock_id() == Gtk.STOCK_CLOSE:
 			self.tab_close_current()
 
-	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_id):
-		if self.tab_webviews[tab_id].get_uri() is not None:
-			self.urlbar.set_text(self.tab_webviews[tab_id].get_uri())
+	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_pos):
+		if self.__get_webview(tab_pos).get_uri() is not None:
+			self.urlbar.set_text(self.__get_webview(tab_pos).get_uri())
 		else:
 			self.urlbar.set_text('')
 		"""if self.tabs[tab_id][2].get_uri() is not None:
@@ -123,8 +131,12 @@ class Browser:
 		self.btn_back.set_sensitive(self.tabs[tab_id][2].can_go_back())
 		self.btn_forward.set_sensitive(self.tabs[tab_id][2].can_go_forward())"""
 
-	def on_urlbar_activate(self, urlbar_entry):
-		entry = urlbar_entry.get_text()
+	def on_urlbar_clicked(self, urlbar):
+		#select all urlbar content
+		#urlbar.get_text()
+
+	def on_urlbar_activate(self, urlbar):
+		entry = urlbar.get_text()
 		if not "http://" in entry:
 			entry = "http://" + entry
 		self.__get_webview().load_uri(entry)
