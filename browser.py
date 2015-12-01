@@ -35,7 +35,7 @@ class Browser:
 		webview.connect('load-started', self.on_webview_load_started)
 		webview.connect('load-finished', self.on_webview_load_finished)
 
-	def tab_new_with_glade(self, pos, set_focus):
+	def tab_new(self, pos, set_focus):
 		# create new builder
 		# see https://mail.gnome.org/archives/gtkmm-list/2015-January/msg00001.html
 		builder = Gtk.Builder()
@@ -50,37 +50,15 @@ class Browser:
 		self.webview_connect(self.tab_webviews[pos])
 		self.tab_contents.insert(pos, builder.get_object('container'))
 		self.tab_contents[pos].add(self.tab_webviews[pos])
-		self.tabcontainer.insert_page(self.tab_contents[pos], self.tab_titlecontainers[pos], pos)
-		# self.tabcontainer.child_set_property(self.tab_contents[pos], 'tab-expand', True)
+		self.tabcontainer.insert_page(self.tab_contents[pos],
+										self.tab_titlecontainers[pos],
+										pos)
+		# self.tabcontainer.child_set_property(self.tab_contents[pos],
+		# 'tab-expand',
+		# True)
 		self.tabcontainer.show_all()
 		if set_focus:
 			self.tabcontainer.set_current_page(pos)
-
-	def tab_new(self, position):
-		tab_content = Gtk.ScrolledWindow()
-		tab_content.set_hexpand(True)
-		tab_content.set_vexpand(True)
-		tab_label = Gtk.Label(label="Empty tab")
-		tab_btn_close = Gtk.Button()
-		tab_btn_close.add(Gtk.Image().new_from_stock(Gtk.STOCK_CLOSE, Gtk.IconSize.BUTTON))
-		tab_btn_close.connect('clicked', self.on_tab_close_btn_clicked)
-		tab_titlecontainer = Gtk.Box(spacing=6)
-		tab_titlecontainer.pack_start(tab_label, True, True, 0)
-		tab_titlecontainer.pack_start(tab_btn_close, False, False, 0)
-		tab_titlecontainer.show_all()
-		tab_webview = WebKit.WebView()
-		tab_content.add(tab_webview)
-		self.tab_contents.append(tab_content)
-		self.tab_webviews.append(tab_webview)
-		self.tab_labels.append(tab_label)
-		self.tab_closebuttons.append(tab_btn_close)
-		self.tabs.append([tab_content, tab_label, tab_webview, tab_btn_close])
-		self.tabcontainer.insert_page(tab_content, tab_titlecontainer, position)
-		self.tabcontainer.show_all()
-		self.tabcontainer.set_current_page(position)
-		tab_webview.connect("load-started", self.on_webview_load_started)
-		tab_webview.connect("title-changed", self.on_webview_title_changed)
-		tab_webview.connect("load-finished", self.on_webview_load_finished)
 
 	def tab_append_next_to_self(self):
 		self.tab_new_with_glade(self.tabcontainer.get_current_page())
