@@ -101,7 +101,7 @@ class Browser:
 		self.btn_forward.set_sensitive(webview.can_go_forward())
 
 	def on_webview_title_changed(self, webview, webframe, title):
-		self.__get_current_label().set_text(title)
+		self.__get_label().set_text(title)
 
 	""" UI elements interaction listener functions """
 
@@ -131,9 +131,9 @@ class Browser:
 		self.btn_back.set_sensitive(self.tabs[tab_id][2].can_go_back())
 		self.btn_forward.set_sensitive(self.tabs[tab_id][2].can_go_forward())"""
 
-	def on_urlbar_clicked(self, urlbar):
+	def on_urlbar_clicked(self, urlbar, user_data):
 		#select all urlbar content
-		#urlbar.get_text()
+		urlbar.grab_focus()
 
 	def on_urlbar_activate(self, urlbar):
 		entry = urlbar.get_text()
