@@ -30,18 +30,24 @@ class Browser:
 
 		self.tab_append()
 
-	def tab_new_with_glade(self, pos):
-		# create new builder, see https://stackoverflow.com/questions/27737525
+	def tab_new_with_glade(self, pos, set_focus):
+		# create new builder, see https://mail.gnome.org/archives/gtkmm-list/2015-January/msg00001.html
 		builder = Gtk.Builder()
 		builder.add_from_file(UI_FILE)
 		self.tab_labels.insert(pos, builder.get_object('tab-title'))
 		self.tab_closebuttons.insert(pos, builder.get_object('tab-close'))
+		self.tab_titlecontainers.insert(pos, builder.get_object('tab-titlecontainer'))
 		self.tab_webviews.insert(pos, WebKit.WebView())
 		self.tab_webviews[pos].connect('title-changed', self.on_webview_title_changed)
-		self.tab_titlecontainers.insert(pos, builder.get_object('tab-titlecontainer'))
-		self.tabcontainer.insert_page(self.tab_webviews[pos], self.tab_titlecontainers[pos], pos)
-		self.tabcontainer.child_set_property(self.tab_webviews[pos], 'tab-expand', True)
+		self.tab_webviews[pos].connect('load-started', self.on_webview_load_started)
+		self.tab_webviews[pos].connect('load-finished', self.on_webview_load_finished)
+		self.tab_contents.insert(pos, builder.get_object('container'))
+		self.tab_contents[pos].add(self.tab_webviews[pos])
+		self.tabcontainer.insert_page(self.tab_contents[pos], self.tab_titlecontainers[pos], pos)
+		#self.tabcontainer.child_set_property(self.tab_contents[pos], 'tab-expand', True)
 		self.tabcontainer.show_all()
+		if set_focus:
+			self.tabcontainer.set_current_page(pos)
 
 	def tab_new(self, position):
 		tab_content = Gtk.ScrolledWindow()
@@ -73,7 +79,7 @@ class Browser:
 		self.tab_new_with_glade(self.tabcontainer.get_current_page())
 
 	def tab_append(self):
-		self.tab_new_with_glade(self.tabcontainer.get_n_pages())
+		self.tab_new_with_glade(self.tabcontainer.get_n_pages(), True)
 
 	def tab_close_current(self):
 		self.tab_close(self.tabcontainer.get_current_page())
@@ -97,13 +103,17 @@ class Browser:
 											None)
 		if webview.get_uri() is not None:
 			self.urlbar.set_text(webview.get_uri())
-		self.btn_back.set_sensitive(self.tabs[self.tabcontainer.get_current_page()][2].can_go_back())
-		self.btn_forward.set_sensitive(self.tabs[self.tabcontainer.get_current_page()][2].can_go_forward())
+		self.btn_back.set_sensitive(webview.can_go_back())
+		self.btn_forward.set_sensitive(webview.can_go_forward())
 
 	def on_webview_title_changed(self, webview, webframe, title):
 		self.tab_labels[self.tabcontainer.get_current_page()].set_text(title)
 
 	def on_tabcontainer_switch_page(self, tabcontainer, tab_content, tab_id):
+		if self.tab_webviews[tab_id].get_uri() is not None:
+			self.urlbar.set_text(self.tab_webviews[tab_id].get_uri())
+		else:
+			self.urlbar.set_text('')
 		"""if self.tabs[tab_id][2].get_uri() is not None:
 			self.urlbar.set_text(self.tabs[tab_id][2].get_uri())
 		else:
@@ -113,12 +123,12 @@ class Browser:
 
 	def on_button_clicked(self, button):
 		if button.get_stock_id() == Gtk.STOCK_GO_BACK:
-			self.tabs[self.tabcontainer.get_current_page()][2].go_back()
+			self.tab_webviews[self.tabcontainer.get_current_page()].go_back()
 		elif button.get_stock_id() == Gtk.STOCK_GO_FORWARD:
-			self.tabs[self.tabcontainer.get_current_page()][2].go_forward()
+			self.tab_webviews[self.tabcontainer.get_current_page()].go_forward()
 		elif button.get_stock_id() == Gtk.STOCK_ADD:
-			#self.tab_append()
-			self.tab_append_next_to_self()
+			self.tab_append()
+			#self.tab_append_next_to_self()
 		elif button.get_stock_id() == Gtk.STOCK_CLOSE:
 			self.tab_close_current()
 

@@ -68,6 +68,7 @@
                     <property name="can_focus">True</property>
                     <property name="margin_left">5</property>
                     <property name="margin_right">5</property>
+                    <property name="primary_icon_name">applications-internet</property>
                     <property name="placeholder_text" translatable="yes">Search or enter address</property>
                     <property name="input_purpose">url</property>
                     <signal name="activate" handler="on_urlbar_activate" swapped="no"/>
@@ -148,7 +149,7 @@
       </object>
     </child>
   </object>
-  <object class="GtkScrolledWindow" id="scrolledwindow1">
+  <object class="GtkScrolledWindow" id="container">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="shadow_type">in</property>
