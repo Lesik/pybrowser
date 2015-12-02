@@ -9,6 +9,7 @@ class Browser:
 
 	tabs = []
 	tab_contents = []
+	tab_favicons = []
 	tab_closebuttons = []
 	tab_webviews = []
 	tab_labels = []
@@ -40,6 +41,8 @@ class Browser:
 		# see https://mail.gnome.org/archives/gtkmm-list/2015-January/msg00001.html
 		builder = Gtk.Builder()
 		builder.add_from_file(UI_FILE)
+		self.tab_favicons.insert(pos,
+			builder.get_object('tab-favicon'))
 		self.tab_labels.insert(pos,
 			builder.get_object('tab-title'))
 		self.tab_closebuttons.insert(pos,
@@ -104,18 +107,21 @@ class Browser:
 	""" WebView listener functions """
 
 	def on_webview_load_started(self, webview, webframe):
-		self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
-											'image-loading')
+		pass
+		# deprecated, loading icon to be placed into tab (fix later)
+		# self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
+		# 									'image-loading')
 
 	def on_webview_load_finished(self, webview, webframe):
-		self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
-											None)
+		# deprecated, loading icon to be placed into tab (fix later)
+		# self.urlbar.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
+		# 									None)
 		self.update_urlbar(webview)
 		self.btn_back.set_sensitive(webview.can_go_back())
 		self.btn_forward.set_sensitive(webview.can_go_forward())
 
 	def on_webview_title_changed(self, webview, webframe, title):
-		self.__get_label().set_text(title)
+		self.__get_label(webview).set_text(title)
 
 	""" UI elements interaction listener functions """
 
