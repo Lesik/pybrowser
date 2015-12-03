@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, WebKit
+from gi.repository import Gtk, WebKit, Keybinder
 import logging
 
 UI_FILE = "browser.ui"
@@ -13,6 +13,7 @@ class Browser:
 	tab_closebuttons = []
 	tab_webviews = []
 	tab_labels = []
+	tab_things = [tab_contents, tab_favicons, tab_closebuttons, tab_webviews]
 	tab_titlecontainers = []
 
 	def __init__(self):
@@ -20,9 +21,14 @@ class Browser:
 		self.builder.add_from_file(UI_FILE)
 		self.builder.connect_signals(self)
 
+		Keybinder.init()
+		Keybinder.bind("<Ctrl>T", self.tab_new, True)
+
 		self.btn_back = self.builder.get_object('bar-btn-back')
 		self.btn_forward = self.builder.get_object('bar-btn-forward')
 		self.urlbar = self.builder.get_object('bar-urlbar')
+
+		self.settings = self.builder.get_object('bar-settings')
 
 		self.tabcontainer = self.builder.get_object('tabcontainer')
 
@@ -41,6 +47,7 @@ class Browser:
 		# see https://mail.gnome.org/archives/gtkmm-list/2015-January/msg00001.html
 		builder = Gtk.Builder()
 		builder.add_from_file(UI_FILE)
+		builder.connect_signals(self)
 		self.tab_favicons.insert(pos,
 			builder.get_object('tab-favicon'))
 		self.tab_labels.insert(pos,
@@ -72,16 +79,22 @@ class Browser:
 	def tab_close_current(self):
 		self.tab_close(self.tabcontainer.get_current_page())
 
-	def tab_close(self, tab_id):
-		logging.info("closing tab with id", tab_id)
-		self.tabs.pop(tab_id)
-		self.tabcontainer.remove_page(tab_id)
+	def tab_close(self, obj):
+		if type(obj) == int:
+			index = obj
+		else:
+			index = self.__get_index_by_object(obj)
+		for list in self.tab_things:
+			list.pop(index)
+		self.tabcontainer.remove_page(index)
 
 	def __get_index_by_object(self, obj):
 		if type(obj) == WebKit.WebView:
 			return self.tab_webviews.index(obj)
 		elif type(obj) == Gtk.ScrolledWindow:
 			return self.tab_contents.index(obj)
+		elif type(obj) == Gtk.Button:
+			return self.tab_closebuttons.index(obj)
 		elif type(obj) == int:
 			return obj
 
@@ -99,10 +112,11 @@ class Browser:
 		pass
 
 	def update_urlbar(self, webview):
-		if webview.get_uri() is not None:
-			self.urlbar.set_text(webview.get_uri())
-		else:
-			self.urlbar.set_text('')
+		if self.__get_index_by_object(webview) == self.tabcontainer.get_current_page():
+			if webview.get_uri() is not None:
+				self.urlbar.set_text(webview.get_uri())
+			else:
+				self.urlbar.set_text('')
 
 	""" WebView listener functions """
 
@@ -126,7 +140,7 @@ class Browser:
 	""" UI elements interaction listener functions """
 
 	def on_tab_close_clicked(self, button):
-		self.tab_close(self.tab_closebuttons.index(button))
+		self.tab_close(button)
 
 	def on_button_clicked(self, button):
 		if button.get_stock_id() == Gtk.STOCK_GO_BACK:
