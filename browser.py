@@ -22,7 +22,9 @@ class Browser:
 		self.builder.connect_signals(self)
 
 		Keybinder.init()
-		Keybinder.bind("<Ctrl>T", self.tab_new, True)
+		Keybinder.bind("<Ctrl>T", self.on_shortcut_pressed, True)
+		Keybinder.bind("<Ctrl>W", self.on_shortcut_pressed, True)
+		Keybinder.bind("<Ctrl>Q", self.on_shortcut_pressed, True)
 
 		self.btn_back = self.builder.get_object('bar-btn-back')
 		self.btn_forward = self.builder.get_object('bar-btn-forward')
@@ -71,7 +73,7 @@ class Browser:
 			self.tabcontainer.set_current_page(pos)
 
 	def tab_append_next_to_self(self):
-		self.tab_new(self.tabcontainer.get_current_page())
+		self.tab_new(self.tabcontainer.get_current_page(), True)
 
 	def tab_append(self):
 		self.tab_new(self.tabcontainer.get_n_pages(), True)
@@ -84,8 +86,8 @@ class Browser:
 			index = obj
 		else:
 			index = self.__get_index_by_object(obj)
-		for list in self.tab_things:
-			list.pop(index)
+		for thing in self.tab_things:
+			thing.pop(index)
 		self.tabcontainer.remove_page(index)
 
 	def __get_index_by_object(self, obj):
@@ -117,6 +119,19 @@ class Browser:
 				self.urlbar.set_text(webview.get_uri())
 			else:
 				self.urlbar.set_text('')
+
+	def quit(self):
+		Gtk.main_quit()
+
+	""" Keyboard shortcut listener functions """
+
+	def on_shortcut_pressed(self, shortcut, weirdboolvar):
+		if shortcut == '<Ctrl>T':
+			self.tab_append()
+		elif shortcut == '<Ctrl>W':
+			self.tab_close_current()
+		elif shortcut == '<Ctrl>Q':
+			self.quit()
 
 	""" WebView listener functions """
 
