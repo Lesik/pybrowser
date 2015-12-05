@@ -25,6 +25,7 @@ class Browser:
 		Keybinder.bind("<Ctrl>T", self.on_shortcut_pressed, True)
 		Keybinder.bind("<Ctrl>W", self.on_shortcut_pressed, True)
 		Keybinder.bind("<Ctrl>Q", self.on_shortcut_pressed, True)
+		Keybinder.bind("<Ctrl>L", self.on_shortcut_pressed, True)
 
 		self.btn_back = self.builder.get_object('bar-btn-back')
 		self.btn_forward = self.builder.get_object('bar-btn-forward')
@@ -71,6 +72,7 @@ class Browser:
 		self.tabcontainer.show_all()
 		if set_focus:
 			self.tabcontainer.set_current_page(pos)
+			self.urlbar.grab_focus()
 
 	def tab_append_next_to_self(self):
 		self.tab_new(self.tabcontainer.get_current_page(), True)
@@ -132,6 +134,8 @@ class Browser:
 			self.tab_close_current()
 		elif shortcut == '<Ctrl>Q':
 			self.quit()
+		elif shortcut == '<Ctrl>L':
+			self.urlbar.grab_focus()
 
 	""" WebView listener functions """
 
@@ -162,6 +166,8 @@ class Browser:
 			self.__get_webview().go_back()
 		elif button.get_stock_id() == Gtk.STOCK_GO_FORWARD:
 			self.__get_webview().go_forward()
+		elif button.get_stock_id() == Gtk.STOCK_REFRESH:
+			self.__get_webview().reload()
 		elif button.get_stock_id() == Gtk.STOCK_ADD:
 			self.tab_append()
 			#self.tab_append_next_to_self()
